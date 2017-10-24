@@ -1,5 +1,7 @@
 package com.hashblu.agents;
 
+import java.util.List;
+
 /**
  * Created by abhisheks on 16-Oct-17.
  */
@@ -11,12 +13,12 @@ public class SalesforceAgentClient implements IAgentClient {
     }
 
     @Override
-    public void receiveChat() {
-
+    public List<HandOffGenericMessage> receiveChat() {
+        return null;
     }
 
     @Override
-    public void sendChat() {
+    public void sendChat(String msg) {
 
     }
 

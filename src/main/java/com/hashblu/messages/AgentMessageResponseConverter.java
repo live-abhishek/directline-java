@@ -1,4 +1,6 @@
-package com.hashblu.agents;
+package com.hashblu.messages;
+
+import com.hashblu.messages.livechat.LiveChatPendingMessageResponse;
 
 import java.util.ArrayList;
 import java.util.List;

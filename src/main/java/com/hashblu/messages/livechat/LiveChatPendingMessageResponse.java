@@ -1,4 +1,4 @@
-package com.hashblu.agents;
+package com.hashblu.messages.livechat;
 
 import java.util.List;
 

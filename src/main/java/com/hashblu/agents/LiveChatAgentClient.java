@@ -1,5 +1,9 @@
 package com.hashblu.agents;
 
+import com.hashblu.messages.*;
+import com.hashblu.messages.livechat.LiveChatGenericMessageResponse;
+import com.hashblu.messages.livechat.LiveChatPendingMessageResponse;
+import com.hashblu.messages.livechat.LiveChatStartMessageResponse;
 import org.springframework.http.*;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -86,7 +90,7 @@ public class LiveChatAgentClient extends AbsAgentClient {
         body.add("message", msg);
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
-        restTemplate.exchange(sendChatUrl, HttpMethod.POST, requestEntity, LiveChatGenericResponse.class);
+        restTemplate.exchange(sendChatUrl, HttpMethod.POST, requestEntity, LiveChatGenericMessageResponse.class);
     }
 
     @Override
@@ -106,6 +110,6 @@ public class LiveChatAgentClient extends AbsAgentClient {
         body.add("secured_session_id", secureSessionId);
 
         HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
-        restTemplate.exchange(endChatUrl, HttpMethod.POST, requestEntity, LiveChatGenericResponse.class);
+        restTemplate.exchange(endChatUrl, HttpMethod.POST, requestEntity, LiveChatGenericMessageResponse.class);
     }
 }

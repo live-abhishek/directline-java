@@ -1,5 +1,6 @@
 package com.hashblu.agents;
 
+import com.hashblu.messages.HandOffGenericMessage;
 import io.swagger.client.ApiException;
 
 import java.util.List;

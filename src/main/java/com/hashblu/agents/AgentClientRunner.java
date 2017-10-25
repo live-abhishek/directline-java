@@ -1,6 +1,7 @@
 package com.hashblu.agents;
 
-import com.hashblu.IReceiveMessageListener;
+import com.hashblu.messages.messageListener.IReceiveMessageListener;
+import com.hashblu.messages.HandOffGenericMessage;
 import io.swagger.client.ApiException;
 
 import java.util.LinkedList;
@@ -10,7 +11,7 @@ import java.util.Queue;
 /**
  * Created by abhisheks on 18-Oct-17.
  */
-public class AgentClient {
+public class AgentClientRunner {
 
     IAgentClient agentClient;
 
@@ -20,7 +21,7 @@ public class AgentClient {
     Queue<String> msgQueue;
     IReceiveMessageListener msgListener;
 
-    public AgentClient(IAgentClient client, IReceiveMessageListener msgListener){
+    public AgentClientRunner(IAgentClient client, IReceiveMessageListener msgListener){
         this.agentClient = client;
         this.msgListener = msgListener;
         msgQueue = new LinkedList<>();

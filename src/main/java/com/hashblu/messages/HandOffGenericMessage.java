@@ -1,4 +1,4 @@
-package com.hashblu.agents;
+package com.hashblu.messages;
 
 /**
  * Created by abhisheks on 23-Oct-17.

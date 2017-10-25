@@ -1,6 +1,6 @@
-package com.hashblu;
+package com.hashblu.messages.messageListener;
 
-import com.hashblu.agents.HandOffGenericMessage;
+import com.hashblu.messages.HandOffGenericMessage;
 
 /**
  * Created by abhisheks on 23-Oct-17.

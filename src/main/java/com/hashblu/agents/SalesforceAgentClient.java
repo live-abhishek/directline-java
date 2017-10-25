@@ -1,5 +1,7 @@
 package com.hashblu.agents;
 
+import com.hashblu.messages.HandOffGenericMessage;
+
 import java.util.List;
 
 /**

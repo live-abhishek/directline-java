@@ -1,9 +1,9 @@
-package com.hashblu.agents;
+package com.hashblu.messages.livechat;
 
 /**
  * Created by abhisheks on 23-Oct-17.
  */
-public class LiveChatGenericResponse {
+public class LiveChatGenericMessageResponse {
     private boolean success;
 
     public boolean isSuccess() {

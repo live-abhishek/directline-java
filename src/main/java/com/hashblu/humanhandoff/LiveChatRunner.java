@@ -1,13 +1,11 @@
 package com.hashblu.humanhandoff;
 
-import com.hashblu.ConsolePrinterMessageListener;
-import com.hashblu.agents.AgentClient;
+import com.hashblu.messages.messageListener.ConsolePrinterMessageListener;
+import com.hashblu.agents.AgentClientRunner;
 import com.hashblu.agents.LiveChatAgentClient;
-import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
 import java.util.Scanner;
@@ -25,7 +23,7 @@ public class LiveChatRunner {
     }
 
     public void startApp() throws ApiException {
-        AgentClient client = new AgentClient(new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID), new ConsolePrinterMessageListener());
+        AgentClientRunner client = new AgentClientRunner(new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID), new ConsolePrinterMessageListener());
         System.out.println("Enter the message you want to send!");
         String msg = "";
         client.startReceivingMessage();

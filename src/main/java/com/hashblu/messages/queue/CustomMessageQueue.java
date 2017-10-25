@@ -14,12 +14,12 @@ public class CustomMessageQueue<T> implements IMessageQueue<T> {
     }
 
     @Override
-    public void pushMsg(T msg) {
-        queue.addLast(msg);
+    public boolean pushMsg(T msg) {
+        return queue.offerLast(msg);
     }
 
     @Override
     public T getMsg() {
-        return queue.getFirst();
+        return queue.pollFirst();
     }
 }

@@ -14,7 +14,7 @@ public class DLRunner {
         DIUser2 dlUser = new DIUser2();
         System.out.println("Enter the message you want to send!");
         String msg = "";
-        dlUser.startReceivingMessage();
+//        dlUser.startReceivingMessage();
         while(true){
             msg = scanner.nextLine();
             if(msg.toLowerCase().equals("stop")){
@@ -22,7 +22,7 @@ public class DLRunner {
                 break;
             }
 //            System.out.println("echo: " + msg);
-            dlUser.sendMessage(msg);
+//            dlUser.sendMessage(msg);
         }
     }
 }

@@ -13,7 +13,7 @@ import java.util.Scanner;
 /**
  * Created by abhisheks on 23-Oct-17.
  */
-@SpringBootApplication
+//@SpringBootApplication
 public class LiveChatRunner {
     static final Scanner scanner = new Scanner(System.in);
 
@@ -24,9 +24,8 @@ public class LiveChatRunner {
 
     public void startApp() throws ApiException {
         AgentClientRunner client = new AgentClientRunner(new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID), new ConsolePrinterMessageListener());
-        System.out.println("Enter the message you want to send!");
         String msg = "";
-        client.startReceivingMessage();
+        client.startHandoff();
         while(true){
             msg = scanner.nextLine();
             if(msg.toLowerCase().equals("stop")){
@@ -34,7 +33,7 @@ public class LiveChatRunner {
                 break;
             }
 //            System.out.println("echo: " + msg);
-            client.sendChat(msg);
+//            client.sendChat(msg);
         }
     }
 }

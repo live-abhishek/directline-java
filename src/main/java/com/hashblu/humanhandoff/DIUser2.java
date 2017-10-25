@@ -1,5 +1,7 @@
 package com.hashblu.humanhandoff;
 
+import com.hashblu.messages.HandOffGenericMessage;
+import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.ConversationsApi;
@@ -31,33 +33,41 @@ public class DIUser2 {
     private static final String apiKey = AppConstants.DIRECT_LINE_KEY1;
     private final ConversationsApi conversations;
     private final Conversation conversation;
-    private volatile boolean receiveFlag = false;
-    private Thread receiverThread;
+    private volatile boolean receiveRemoteFlag = false;
+    private volatile boolean receiveQueueFlag = false;
+    private Thread receiverRemoteThread;
+    private Thread receiverQueueThread;
 
-    public DIUser2() throws ApiException {
+    private IMessageQueue<HandOffGenericMessage> agentQueue;
+    private IMessageQueue<HandOffGenericMessage> botQueue;
+
+    public DIUser2(IMessageQueue<HandOffGenericMessage> botQueue, IMessageQueue<HandOffGenericMessage> agentQueue) throws ApiException {
         client = new ApiClient();
         client.addDefaultHeader("Authorization", "Bearer " + apiKey);
         conversations = new ConversationsApi(client);
         conversation = conversations.conversationsStartConversation();
+        this.botQueue = botQueue;
+        this.agentQueue = agentQueue;
     }
 
-    public void startReceivingMessage(){
-        if( receiverThread != null )
+    public void startReceivingBotMessage(){
+        if( receiverRemoteThread != null )
             return;
 
-        receiverThread = new Thread(){
+        receiverRemoteThread = new Thread(){
             @Override
             public void run() {
                 String watermark = null;
                 while(true) {
-                    if (!receiveFlag)
+                    if (!receiveRemoteFlag)
                         break;
                     try {
                         ActivitySet activitySet = conversations.conversationsGetActivities(conversation.getConversationId(), watermark);
                         watermark = activitySet.getWatermark();
                         activitySet.getActivities().forEach(a -> {
                             if(!a.getFrom().getId().equals("Live-Agent")){
-                                System.out.println(a.getText());
+                                System.out.println("Received from bot: " + a.getText());
+                                botQueue.pushMsg(new HandOffGenericMessage(a.getText()));
                             }
                         });
                         Thread.sleep(1000 * 1);
@@ -70,14 +80,15 @@ public class DIUser2 {
                 System.out.println("Message receiving ended!");
             }
         };
-        receiveFlag = true;
-        receiverThread.start();
+        receiveRemoteFlag = true;
+        receiverRemoteThread.start();
     }
 
     public void stopConversation(){
-        receiveFlag = false;
+        receiveRemoteFlag = false;
         try {
-            receiverThread.join();
+            receiverRemoteThread.join();
+            receiverQueueThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -89,7 +100,31 @@ public class DIUser2 {
         }
     }
 
-    public void sendMessage(String message) throws ApiException {
+    private void startReceivingQueueMessage(){
+        receiverQueueThread = new Thread() {
+            @Override
+            public void run(){
+                while(true) {
+                    if (!receiveQueueFlag) {
+                        break;
+                    }
+                    try{
+                        HandOffGenericMessage msg = agentQueue.getMsg();
+                        if(msg != null){
+                            sendMessage(msg.getMsg());
+                            if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
+                                stopConversation();
+                            }
+                        }
+                    } catch (Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+    }
+
+    private void sendMessage(String message) throws ApiException {
         Activity activity = new Activity();
         ChannelAccount channelAccount = new ChannelAccount();
         channelAccount.setName(CHANNEL_ACCOUNT_NAME);

@@ -1,12 +1,12 @@
 package com.hashblu.agents;
 
+import com.hashblu.messages.messageListener.DumperMessageListener;
 import com.hashblu.messages.messageListener.IReceiveMessageListener;
 import com.hashblu.messages.HandOffGenericMessage;
+import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiException;
 
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Queue;
 
 /**
  * Created by abhisheks on 18-Oct-17.
@@ -15,31 +15,37 @@ public class AgentClientRunner {
 
     IAgentClient agentClient;
 
-    Thread receiverThread;
-    boolean receiveFlag;
+    Thread receiverRemoteThread;
+    boolean receiveRemoteFlag;
 
-    Queue<String> msgQueue;
+    Thread receiverQueueThread;
+    boolean receiveQueueFlag;
+
     IReceiveMessageListener msgListener;
+    IMessageQueue<HandOffGenericMessage> agentQueue;
+    IMessageQueue<HandOffGenericMessage> botQueue;
 
-    public AgentClientRunner(IAgentClient client, IReceiveMessageListener msgListener){
+    public AgentClientRunner(IAgentClient client, IMessageQueue<HandOffGenericMessage> agentQueue, IMessageQueue<HandOffGenericMessage> botQueue){
         this.agentClient = client;
-        this.msgListener = msgListener;
-        msgQueue = new LinkedList<>();
+        this.agentQueue = agentQueue;
+        this.botQueue = botQueue;
+        this.msgListener = new DumperMessageListener(this.agentQueue);
     }
 
-    public void startReceivingMessage() throws ApiException {
-        if(receiverThread != null){
-            return;
-        }
+    public void startHandoff() throws ApiException {
+        agentClient.startChat();
+        startReceivingRemoteMessage();
+        startReceivingQueueMessage();
+    }
 
-        this.agentClient.startChat();
-
-        receiverThread = new Thread(){
+    private void startReceivingRemoteMessage() throws ApiException {
+        receiverRemoteThread = new Thread(){
             @Override
             public void run(){
                 while(true){
-                    if(!receiveFlag)
+                    if(!receiveRemoteFlag) {
                         break;
+                    }
                     try{
                         List<HandOffGenericMessage> genericMsgs = agentClient.receiveChat();
                         genericMsgs.forEach(m -> {
@@ -52,27 +58,52 @@ public class AgentClientRunner {
                                 }
                             }
                         });
-                        Thread.sleep(2*1000);
+                        Thread.sleep(1*1000);
                     } catch(Exception e){
                         e.printStackTrace();
                     }
-
                 }
             }
         };
-        receiveFlag = true;
-        receiverThread.setName("Reciever: " + agentClient.getClass().getSimpleName());
-        receiverThread.start();
+        receiveRemoteFlag = true;
+        receiverRemoteThread.setName("Reciever: " + agentClient.getClass().getSimpleName());
+        receiverRemoteThread.start();
     }
 
-    public void sendChat(String msg) throws ApiException {
-        agentClient.sendChat(msg);
+    private void startReceivingQueueMessage() throws ApiException {
+        receiverQueueThread = new Thread() {
+            @Override
+            public void run(){
+                while(true){
+                    if(!receiveQueueFlag){
+                        break;
+                    }
+                    try{
+                        HandOffGenericMessage msg = botQueue.getMsg();
+                        if(msg != null) {
+                            agentClient.sendChat(msg.getMsg());
+                            if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_USER){
+                                endChat();
+                            }
+                        }
+                        Thread.sleep(1*1000);
+                    } catch(Exception e){
+                        e.printStackTrace();
+                    }
+                }
+            }
+        };
+        receiveRemoteFlag = true;
+        receiverRemoteThread.setName("Sender: " + agentClient.getClass().getSimpleName());
+        receiverRemoteThread.start();
     }
 
     public void endChat() throws ApiException {
-        receiveFlag = false;
+        receiveRemoteFlag = false;
+        receiveQueueFlag = false;
         try{
-            receiverThread.join();
+            receiverRemoteThread.join();
+            receiverQueueThread.join();
         } catch (InterruptedException e){
             e.printStackTrace();
         }

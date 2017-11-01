@@ -1,5 +1,6 @@
 package com.hashblu.agents;
 
+import com.hashblu.MessageHandler;
 import com.hashblu.messages.messageListener.DumperMessageListener;
 import com.hashblu.messages.messageListener.IReceiveMessageListener;
 import com.hashblu.messages.HandOffGenericMessage;
@@ -21,15 +22,8 @@ public class AgentClientRunner {
     Thread receiverQueueThread;
     boolean receiveQueueFlag;
 
-    IReceiveMessageListener msgListener;
-    IMessageQueue<HandOffGenericMessage> agentQueue;
-    IMessageQueue<HandOffGenericMessage> botQueue;
-
-    public AgentClientRunner(IAgentClient client, IMessageQueue<HandOffGenericMessage> agentQueue, IMessageQueue<HandOffGenericMessage> botQueue){
+    public AgentClientRunner(IAgentClient client){
         this.agentClient = client;
-        this.agentQueue = agentQueue;
-        this.botQueue = botQueue;
-        this.msgListener = new DumperMessageListener(this.agentQueue);
     }
 
     public void startHandoff() throws ApiException {
@@ -49,7 +43,7 @@ public class AgentClientRunner {
                     try{
                         List<HandOffGenericMessage> genericMsgs = agentClient.receiveChat();
                         genericMsgs.forEach(m -> {
-                            msgListener.processMessage(m);
+                            MessageHandler.getMessageHandler().handleAgentMessage(m);
                             if(m.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
                                 try {
                                     endChat();
@@ -66,7 +60,7 @@ public class AgentClientRunner {
             }
         };
         receiveRemoteFlag = true;
-        receiverRemoteThread.setName("Reciever: " + agentClient.getClass().getSimpleName());
+        receiverRemoteThread.setName("Agent Reciever: " + agentClient.getClass().getSimpleName());
         receiverRemoteThread.start();
     }
 
@@ -79,7 +73,7 @@ public class AgentClientRunner {
                         break;
                     }
                     try{
-                        HandOffGenericMessage msg = botQueue.getMsg();
+                        HandOffGenericMessage msg = MessageHandler.getMessageHandler().getAgentMessage();
                         if(msg != null) {
                             agentClient.sendChat(msg.getMsg());
                             if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_USER){
@@ -93,9 +87,9 @@ public class AgentClientRunner {
                 }
             }
         };
-        receiveRemoteFlag = true;
-        receiverRemoteThread.setName("Sender: " + agentClient.getClass().getSimpleName());
-        receiverRemoteThread.start();
+        receiveQueueFlag = true;
+        receiverQueueThread.setName("Agent Sender: " + agentClient.getClass().getSimpleName());
+        receiverQueueThread.start();
     }
 
     public void endChat() throws ApiException {

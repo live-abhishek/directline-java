@@ -23,7 +23,7 @@ public class LiveChatRunner {
     }
 
     public void startApp() throws ApiException {
-        AgentClientRunner client = new AgentClientRunner(new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID), new ConsolePrinterMessageListener());
+        AgentClientRunner client = new AgentClientRunner(new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID));
         String msg = "";
         client.startHandoff();
         while(true){

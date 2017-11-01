@@ -1,5 +1,6 @@
 package com.hashblu.humanhandoff;
 
+import com.hashblu.MessageHandler;
 import com.hashblu.messages.HandOffGenericMessage;
 import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiClient;
@@ -38,19 +39,20 @@ public class DIUser2 {
     private Thread receiverRemoteThread;
     private Thread receiverQueueThread;
 
-    private IMessageQueue<HandOffGenericMessage> agentQueue;
-    private IMessageQueue<HandOffGenericMessage> botQueue;
-
-    public DIUser2(IMessageQueue<HandOffGenericMessage> botQueue, IMessageQueue<HandOffGenericMessage> agentQueue) throws ApiException {
+    public DIUser2() throws ApiException {
         client = new ApiClient();
         client.addDefaultHeader("Authorization", "Bearer " + apiKey);
         conversations = new ConversationsApi(client);
         conversation = conversations.conversationsStartConversation();
-        this.botQueue = botQueue;
-        this.agentQueue = agentQueue;
+        startDIUser();
     }
 
-    public void startReceivingBotMessage(){
+    private void startDIUser(){
+        startReceivingBotMessage();
+        startReceivingQueueMessage();
+    }
+
+    private void startReceivingBotMessage(){
         if( receiverRemoteThread != null )
             return;
 
@@ -64,12 +66,20 @@ public class DIUser2 {
                     try {
                         ActivitySet activitySet = conversations.conversationsGetActivities(conversation.getConversationId(), watermark);
                         watermark = activitySet.getWatermark();
-                        activitySet.getActivities().forEach(a -> {
-                            if(!a.getFrom().getId().equals("Live-Agent")){
+                        for(Activity a : activitySet.getActivities()){
+                            if(!"Live-Agent".equals(a.getFrom().getId())){
                                 System.out.println("Received from bot: " + a.getText());
-                                botQueue.pushMsg(new HandOffGenericMessage(a.getText()));
+                                HandOffGenericMessage genMsg;
+                                if(a.getText().equals("help")){
+                                    genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_START_FROM_USER, "");
+                                } else if(a.getText().equals("stop")) {
+                                    genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_USER, "");
+                                } else {
+                                    genMsg = new HandOffGenericMessage(a.getText());
+                                }
+                                MessageHandler.getMessageHandler().handleBotMessage(genMsg);
                             }
-                        });
+                        }
                         Thread.sleep(1000 * 1);
                     } catch (ApiException e) {
                         e.printStackTrace();
@@ -81,6 +91,7 @@ public class DIUser2 {
             }
         };
         receiveRemoteFlag = true;
+        receiverRemoteThread.setName("DirectLine Receiver: " + this.getClass().getSimpleName());
         receiverRemoteThread.start();
     }
 
@@ -109,7 +120,7 @@ public class DIUser2 {
                         break;
                     }
                     try{
-                        HandOffGenericMessage msg = agentQueue.getMsg();
+                        HandOffGenericMessage msg = MessageHandler.getMessageHandler().getBotMessage();
                         if(msg != null){
                             sendMessage(msg.getMsg());
                             if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
@@ -122,6 +133,9 @@ public class DIUser2 {
                 }
             }
         };
+        receiveQueueFlag = true;
+        receiverQueueThread.setName("DirectLine Sender: " + this.getClass().getSimpleName());
+        receiverQueueThread.start();
     }
 
     private void sendMessage(String message) throws ApiException {

@@ -2,7 +2,6 @@ package com.hashblu.humanhandoff;
 
 import com.hashblu.MessageHandler;
 import com.hashblu.messages.HandOffGenericMessage;
-import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiClient;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.ConversationsApi;
@@ -67,8 +66,8 @@ public class DIUser2 {
                         ActivitySet activitySet = conversations.conversationsGetActivities(conversation.getConversationId(), watermark);
                         watermark = activitySet.getWatermark();
                         for(Activity a : activitySet.getActivities()){
-                            if(!"Live-Agent".equals(a.getFrom().getId())){
-                                System.out.println("Received from bot: " + a.getText());
+                            if(!"Live-Agent".equals(a.getFrom().getId())){ // skip self messages
+//                                System.out.println("Received from bot: " + a.getText());
                                 HandOffGenericMessage genMsg;
                                 if(a.getText().equals("help")){
                                     genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_START_FROM_USER, "");
@@ -124,7 +123,7 @@ public class DIUser2 {
                         if(msg != null){
                             sendMessage(msg.getMsg());
                             if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
-                                stopConversation();
+                                // stopConversation();
                             }
                         }
                     } catch (Exception e){

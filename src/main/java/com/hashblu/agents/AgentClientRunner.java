@@ -4,6 +4,7 @@ import com.hashblu.MessageHandler;
 import com.hashblu.messages.messageListener.DumperMessageListener;
 import com.hashblu.messages.messageListener.IReceiveMessageListener;
 import com.hashblu.messages.HandOffGenericMessage;
+import com.hashblu.messages.queue.CustomMessageQueue;
 import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiException;
 
@@ -22,8 +23,13 @@ public class AgentClientRunner {
     Thread receiverQueueThread;
     boolean receiveQueueFlag;
 
-    public AgentClientRunner(IAgentClient client){
+    IMessageQueue<HandOffGenericMessage> agentQueue;
+
+    public String clientId;
+
+    public AgentClientRunner(String clientId, IAgentClient client){
         this.agentClient = client;
+        this.agentQueue = new CustomMessageQueue<>();
     }
 
     public void startHandoff() throws ApiException {
@@ -43,6 +49,7 @@ public class AgentClientRunner {
                     try{
                         List<HandOffGenericMessage> genericMsgs = agentClient.receiveChat();
                         genericMsgs.forEach(m -> {
+                            m.setChannelId(AgentClientRunner.this.clientId);
                             MessageHandler.getMessageHandler().handleAgentMessage(m);
                             if(m.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
                                 try {
@@ -73,7 +80,7 @@ public class AgentClientRunner {
                         break;
                     }
                     try{
-                        HandOffGenericMessage msg = MessageHandler.getMessageHandler().getAgentMessage();
+                        HandOffGenericMessage msg = MessageHandler.getMessageHandler().getAgentMessage(AgentClientRunner.this);
                         if(msg != null) {
                             agentClient.sendChat(msg.getMsg());
                             if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_USER){
@@ -102,6 +109,10 @@ public class AgentClientRunner {
             e.printStackTrace();
         }
         agentClient.closeChat();
+    }
+
+    public IMessageQueue<HandOffGenericMessage> getAgentQueue(){
+        return agentQueue;
     }
 
 

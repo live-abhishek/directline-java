@@ -6,6 +6,7 @@ package com.hashblu.messages;
 public class HandOffGenericMessage {
     private MessageType msgType;
     private String msg;
+    private String channelId;
 
     public HandOffGenericMessage(MessageType msgType, String msg){
         this.msgType = msgType;
@@ -26,6 +27,18 @@ public class HandOffGenericMessage {
 
     public void setMsgType(MessageType msgType) {
         this.msgType = msgType;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getChannelId() {
+        return channelId;
+    }
+
+    public void setChannelId(String channelId) {
+        this.channelId = channelId;
     }
 
     public enum MessageType{

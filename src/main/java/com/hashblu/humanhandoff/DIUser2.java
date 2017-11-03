@@ -38,11 +38,14 @@ public class DIUser2 {
     private Thread receiverRemoteThread;
     private Thread receiverQueueThread;
 
+    private DirectLineMessageParser directLineMessageParser;
+
     public DIUser2() throws ApiException {
         client = new ApiClient();
         client.addDefaultHeader("Authorization", "Bearer " + apiKey);
         conversations = new ConversationsApi(client);
         conversation = conversations.conversationsStartConversation();
+        directLineMessageParser = new DirectLineMessageParser();
         startDIUser();
     }
 
@@ -68,14 +71,7 @@ public class DIUser2 {
                         for(Activity a : activitySet.getActivities()){
                             if(!"Live-Agent".equals(a.getFrom().getId())){ // skip self messages
 //                                System.out.println("Received from bot: " + a.getText());
-                                HandOffGenericMessage genMsg;
-                                if(a.getText().equals("help")){
-                                    genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_START_FROM_USER, "");
-                                } else if(a.getText().equals("stop")) {
-                                    genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_USER, "");
-                                } else {
-                                    genMsg = new HandOffGenericMessage(a.getText());
-                                }
+                                HandOffGenericMessage genMsg = directLineMessageParser.parseMsg(a.getText());
                                 MessageHandler.getMessageHandler().handleBotMessage(genMsg);
                             }
                         }
@@ -121,7 +117,8 @@ public class DIUser2 {
                     try{
                         HandOffGenericMessage msg = MessageHandler.getMessageHandler().getBotMessage();
                         if(msg != null){
-                            sendMessage(msg.getMsg());
+                            String jsonStringMsg = directLineMessageParser.parseHandoffMessage(msg);
+                            sendMessage(jsonStringMsg);
                             if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
                                 // stopConversation();
                             }

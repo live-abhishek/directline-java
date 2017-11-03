@@ -16,17 +16,12 @@ import java.util.Map;
  */
 public class MessageHandler {
     IMessageQueue<HandOffGenericMessage> botQueue;
-//    IMessageQueue<HandOffGenericMessage> agentQueue;
-
     Map<String, AgentClientRunner> clientRunnerMap = new HashMap<>();
-
-//    AgentClientRunner clientRunner;
 
     private static MessageHandler messageHandler;
 
     private MessageHandler(){
         botQueue = new CustomMessageQueue<>();
-//        agentQueue = new CustomMessageQueue<>();
     }
 
     // agents will PUSH here
@@ -38,20 +33,17 @@ public class MessageHandler {
     public void handleBotMessage(HandOffGenericMessage genMsg) throws ApiException {
         if(genMsg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_START_FROM_USER){
             if(clientRunnerMap.size() < 5){
-                AgentClientRunner agentClientRunner = createAgentClientRunner(genMsg.getChannelId());
+                AgentClientRunner agentClientRunner = createAgentClientRunner(genMsg.getConversationId());
+                clientRunnerMap.put(genMsg.getConversationId(), agentClientRunner);
                 agentClientRunner.startHandoff();
-                // create a message that chat with live agent has been successfully established
             } else {
                 // create a message that all slots are full & put in bot Queue
             }
         } else if(genMsg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_USER){
-            clientRunnerMap.get(genMsg.getChannelId()).endChat();
-            clientRunnerMap.remove(genMsg.getChannelId());
-//            clientRunner.endChat();
-//            clientRunner = null;
+            clientRunnerMap.get(genMsg.getConversationId()).endChat();
+            clientRunnerMap.remove(genMsg.getConversationId());
         } else {
-            clientRunnerMap.get(genMsg.getChannelId()).getAgentQueue().pushMsg(genMsg);
-//            agentQueue.pushMsg(genMsg);
+            clientRunnerMap.get(genMsg.getConversationId()).getAgentQueue().pushMsg(genMsg);
         }
         // logic to start agent connections & divert messages to them
     }
@@ -73,7 +65,7 @@ public class MessageHandler {
         return messageHandler;
     }
 
-    private AgentClientRunner createAgentClientRunner(String channelId){
-        return new AgentClientRunner(channelId, new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID));
+    private AgentClientRunner createAgentClientRunner(String conversationId){
+        return new AgentClientRunner(conversationId, new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID));
     }
 }

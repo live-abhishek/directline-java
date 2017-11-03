@@ -2,7 +2,9 @@ package com.hashblu.messages;
 
 import com.hashblu.messages.livechat.LiveChatPendingMessageResponse;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -13,10 +15,14 @@ public class AgentMessageResponseConverter {
         List<HandOffGenericMessage> handOffGenericMessages = new ArrayList<>();
         for(LiveChatPendingMessageResponse.MessageResponse msgRes : msgResponse.getEvents()){
             if(msgRes.getText() != null && !msgRes.getUser_type().equals("visitor")) {
-                handOffGenericMessages.add(new HandOffGenericMessage(msgRes.getText()));
+                HandOffGenericMessage genericMessage = new HandOffGenericMessage(msgRes.getText());
+                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                handOffGenericMessages.add(genericMessage);
             }
             if(msgRes.getType().equals("chat_closed")){
-                handOffGenericMessages.add(new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, ""));
+                HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, "");
+                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                handOffGenericMessages.add(genericMessage);
             }
         }
         return handOffGenericMessages;

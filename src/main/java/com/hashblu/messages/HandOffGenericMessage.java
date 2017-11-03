@@ -1,12 +1,15 @@
 package com.hashblu.messages;
 
+import java.sql.Timestamp;
+
 /**
  * Created by abhisheks on 23-Oct-17.
  */
 public class HandOffGenericMessage {
     private MessageType msgType;
     private String msg;
-    private String channelId;
+    private String conversationId;
+    private Timestamp timeStamp;
 
     public HandOffGenericMessage(MessageType msgType, String msg){
         this.msgType = msgType;
@@ -33,18 +36,27 @@ public class HandOffGenericMessage {
         this.msg = msg;
     }
 
-    public String getChannelId() {
-        return channelId;
+    public String getConversationId() {
+        return conversationId;
     }
 
-    public void setChannelId(String channelId) {
-        this.channelId = channelId;
+    public void setConversationId(String conversationId) {
+        this.conversationId = conversationId;
+    }
+
+    public Timestamp getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(Timestamp timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public enum MessageType{
         CHAT_END_FROM_AGENT,
         CHAT_END_FROM_USER,
         TEXT_MSG,
-        CHAT_START_FROM_USER
+        CHAT_START_FROM_USER,
+        CHAT_START_FROM_USER_SUCCESS
     }
 }

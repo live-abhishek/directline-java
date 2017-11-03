@@ -1,13 +1,13 @@
 package com.hashblu.agents;
 
 import com.hashblu.MessageHandler;
-import com.hashblu.messages.messageListener.DumperMessageListener;
-import com.hashblu.messages.messageListener.IReceiveMessageListener;
 import com.hashblu.messages.HandOffGenericMessage;
 import com.hashblu.messages.queue.CustomMessageQueue;
 import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiException;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -25,15 +25,20 @@ public class AgentClientRunner {
 
     IMessageQueue<HandOffGenericMessage> agentQueue;
 
-    public String clientId;
+    public String conversationId;
 
-    public AgentClientRunner(String clientId, IAgentClient client){
+    public AgentClientRunner(String conversationId, IAgentClient client){
         this.agentClient = client;
         this.agentQueue = new CustomMessageQueue<>();
+        this.conversationId = conversationId;
     }
 
     public void startHandoff() throws ApiException {
         agentClient.startChat();
+        HandOffGenericMessage genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_START_FROM_USER_SUCCESS, "");
+        genMsg.setTimeStamp(new Timestamp(new Date().getTime()));
+        genMsg.setConversationId(this.conversationId);
+        MessageHandler.getMessageHandler().handleAgentMessage(genMsg);
         startReceivingRemoteMessage();
         startReceivingQueueMessage();
     }
@@ -49,7 +54,7 @@ public class AgentClientRunner {
                     try{
                         List<HandOffGenericMessage> genericMsgs = agentClient.receiveChat();
                         genericMsgs.forEach(m -> {
-                            m.setChannelId(AgentClientRunner.this.clientId);
+                            m.setConversationId(AgentClientRunner.this.conversationId);
                             MessageHandler.getMessageHandler().handleAgentMessage(m);
                             if(m.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
                                 try {

@@ -14,15 +14,16 @@ public class AgentMessageResponseConverter {
     public static List<HandOffGenericMessage> process(LiveChatPendingMessageResponse msgResponse){
         List<HandOffGenericMessage> handOffGenericMessages = new ArrayList<>();
         for(LiveChatPendingMessageResponse.MessageResponse msgRes : msgResponse.getEvents()){
-            HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT , "");
             if(msgRes.getText() != null && !msgRes.getUser_type().equals("visitor")) {
-                genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT , msgRes.getText());
+                HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT , msgRes.getText());
+                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                handOffGenericMessages.add(genericMessage);
             }
             if(msgRes.getType().equals("chat_closed")){
-                genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, "");
+                HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, "");
+                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                handOffGenericMessages.add(genericMessage);
             }
-            genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
-            handOffGenericMessages.add(genericMessage);
         }
         return handOffGenericMessages;
     }

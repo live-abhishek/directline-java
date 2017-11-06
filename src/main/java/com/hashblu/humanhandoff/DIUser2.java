@@ -28,8 +28,8 @@ public class DIUser2 {
         }
     }
 
-    private static final String CHANNEL_ACCOUNT_NAME = "John Smith";
-    private static final String CHANNEL_ID = "Live-Agent";
+    private static final String CHANNEL_ACCOUNT_NAME = AppConstants.DIRECTLINE_CHANNEL_ACCOUNT_NAME;
+    private static final String CHANNEL_ID = AppConstants.DIRECTLINE_CHANNEL_ID;
     private static final String apiKey = AppConstants.DIRECT_LINE_KEY1;
     private final ConversationsApi conversations;
     private final Conversation conversation;
@@ -69,7 +69,7 @@ public class DIUser2 {
                         ActivitySet activitySet = conversations.conversationsGetActivities(conversation.getConversationId(), watermark);
                         watermark = activitySet.getWatermark();
                         for(Activity a : activitySet.getActivities()){
-                            if(!"Live-Agent".equals(a.getFrom().getId())){ // skip self messages
+                            if(!CHANNEL_ID.equals(a.getFrom().getId())){ // skip self messages
 //                                System.out.println("Received from bot: " + a.getText());
                                 HandOffGenericMessage genMsg = directLineMessageParser.parseMsg(a.getText());
                                 MessageHandler.getMessageHandler().handleBotMessage(genMsg);

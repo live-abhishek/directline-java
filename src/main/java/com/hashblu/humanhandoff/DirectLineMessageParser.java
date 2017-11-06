@@ -22,7 +22,7 @@ public class DirectLineMessageParser {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        HandOffGenericMessage genericMessage = new HandOffGenericMessage("");
+        HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_USER, "");
         genericMessage.setConversationId(map.get("conversationId").toString());
         genericMessage.setTimeStamp(new Timestamp(Long.parseLong(map.get("msgTimeStamp").toString())));
         if(map.get("msgCommand").equals("CHAT_START_FROM_USER")){
@@ -30,7 +30,7 @@ public class DirectLineMessageParser {
         } else if(map.get("msgCommand").equals("CHAT_END_FROM_USER")) {
             genericMessage.setMsgType(HandOffGenericMessage.MessageType.CHAT_END_FROM_USER);
         } else if(map.get("msgCommand").equals("CHAT_TEXT_FROM_USER")) {
-            genericMessage.setMsgType(HandOffGenericMessage.MessageType.TEXT_MSG);
+            genericMessage.setMsgType(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_USER);
             genericMessage.setMsg(map.get("msgText").toString());
         }
         return genericMessage;
@@ -44,7 +44,7 @@ public class DirectLineMessageParser {
         map.put("msgText", genericMessage.getMsg());
         if(genericMessage.getMsgType() == HandOffGenericMessage.MessageType.CHAT_START_FROM_USER_SUCCESS){
             map.put("msgCommand", HandOffGenericMessage.MessageType.CHAT_START_FROM_USER_SUCCESS.toString());
-        } else if(genericMessage.getMsgType() == HandOffGenericMessage.MessageType.TEXT_MSG){
+        } else if(genericMessage.getMsgType() == HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT){
             map.put("msgCommand", "CHAT_TEXT_FROM_AGENT");
         }
         String jsonString = "{}";

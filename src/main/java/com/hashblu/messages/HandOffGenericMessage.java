@@ -16,10 +16,6 @@ public class HandOffGenericMessage {
         this.msg = msg;
     }
 
-    public HandOffGenericMessage(String msg){
-        this(MessageType.TEXT_MSG, msg);
-    }
-
     public String getMsg() {
         return msg;
     }
@@ -55,7 +51,8 @@ public class HandOffGenericMessage {
     public enum MessageType{
         CHAT_END_FROM_AGENT,
         CHAT_END_FROM_USER,
-        TEXT_MSG,
+        CHAT_TEXT_FROM_USER,
+        CHAT_TEXT_FROM_AGENT,
         CHAT_START_FROM_USER,
         CHAT_START_FROM_USER_SUCCESS
     }

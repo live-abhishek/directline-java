@@ -25,6 +25,14 @@ public class LiveChatPendingMessageResponse {
         private String type;
         private String user_type;
 
+        public Agent getAgent() {
+            return agent;
+        }
+
+        public void setAgent(Agent agent) {
+            this.agent = agent;
+        }
+
         public long getMessage_id() {
             return message_id;
         }

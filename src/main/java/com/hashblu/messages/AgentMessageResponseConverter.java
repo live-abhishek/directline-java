@@ -18,9 +18,12 @@ public class AgentMessageResponseConverter {
                 HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT , msgRes.getText());
                 genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
                 handOffGenericMessages.add(genericMessage);
-            }
-            if(msgRes.getType().equals("chat_closed")){
+            } else if(msgRes.getType().equals("chat_closed")){
                 HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, "");
+                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                handOffGenericMessages.add(genericMessage);
+            } else if(msgRes.getType().equals("agent_details")){
+                HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT, "You are now connected to " + msgRes.getAgent().getName());
                 genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
                 handOffGenericMessages.add(genericMessage);
             }

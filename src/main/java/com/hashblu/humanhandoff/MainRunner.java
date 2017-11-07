@@ -18,6 +18,6 @@ public class MainRunner {
 
     public void startApp() throws ApiException {
         MessageHandler.getMessageHandler();
-        new DIUser2();
+        new DirectLineUser();
     }
 }

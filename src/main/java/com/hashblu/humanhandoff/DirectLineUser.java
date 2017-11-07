@@ -10,7 +10,7 @@ import io.swagger.client.model.*;
 /**
  * Created by abhisheks on 04-Oct-17.
  */
-public class DIUser2 {
+public class DirectLineUser {
 
     private final ApiClient client;
 
@@ -40,7 +40,7 @@ public class DIUser2 {
 
     private DirectLineMessageParser directLineMessageParser;
 
-    public DIUser2() throws ApiException {
+    public DirectLineUser() throws ApiException {
         client = new ApiClient();
         client.addDefaultHeader("Authorization", "Bearer " + apiKey);
         conversations = new ConversationsApi(client);

@@ -26,6 +26,7 @@ public class AgentClientRunner {
     IMessageQueue<HandOffGenericMessage> agentQueue;
 
     public String conversationId;
+    public long lastMessageTime;
 
     public AgentClientRunner(String conversationId, IAgentClient client){
         this.agentClient = client;
@@ -38,6 +39,7 @@ public class AgentClientRunner {
         HandOffGenericMessage genMsg = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_START_FROM_USER_SUCCESS, "");
         genMsg.setTimeStamp(new Timestamp(new Date().getTime()));
         genMsg.setConversationId(this.conversationId);
+        lastMessageTime = System.currentTimeMillis();
         MessageHandler.getMessageHandler().handleAgentMessage(genMsg);
         startReceivingRemoteMessage();
         startReceivingQueueMessage();
@@ -72,7 +74,7 @@ public class AgentClientRunner {
             }
         };
         receiveRemoteFlag = true;
-        receiverRemoteThread.setName("Agent Reciever: " + agentClient.getClass().getSimpleName());
+        receiverRemoteThread.setName("Agent Receiver: " + agentClient.getClass().getSimpleName());
         receiverRemoteThread.start();
     }
 

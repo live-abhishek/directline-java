@@ -10,4 +10,5 @@ public class AppConstants {
     public static final String LIVE_CHAT_LICENCE_ID = "9151540";
     public static final String DIRECTLINE_CHANNEL_ACCOUNT_NAME = "John Smith";
     public static final String DIRECTLINE_CHANNEL_ID = "Live-Agent";
+    public static final String SALESFORCE_URL = "https://d.la1-c2-ukb.salesforceliveagent.com";
 }

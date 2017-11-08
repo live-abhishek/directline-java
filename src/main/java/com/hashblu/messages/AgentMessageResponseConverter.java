@@ -1,6 +1,7 @@
 package com.hashblu.messages;
 
 import com.hashblu.messages.livechat.LiveChatPendingMessageResponse;
+import com.hashblu.messages.salesforce.SalesforceSystemMessageResponse;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -24,6 +25,18 @@ public class AgentMessageResponseConverter {
                 handOffGenericMessages.add(genericMessage);
             } else if(msgRes.getType().equals("agent_details")){
                 HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT, "You are now connected to " + msgRes.getAgent().getName());
+                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                handOffGenericMessages.add(genericMessage);
+            }
+        }
+        return handOffGenericMessages;
+    }
+
+    public static List<HandOffGenericMessage> process(SalesforceSystemMessageResponse msgResponses){
+        List<HandOffGenericMessage> handOffGenericMessages = new ArrayList<>();
+        for(SalesforceSystemMessageResponse.MessageType msgRes : msgResponses.getMessagesTypes()){
+            if(msgRes.getType().equals("ChatMessage")){
+                HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT, msgRes.getMessage().getText());
                 genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
                 handOffGenericMessages.add(genericMessage);
             }

@@ -28,8 +28,12 @@ public class SalesForceRestAgentClient {
     private String sessionId;
     private long sequence;
 
-    public SalesForceRestAgentClient(){
-
+    public SalesForceRestAgentClient(String orgId, String deploymentId, String chatButtonId, String apiVersion){
+        this.orgId = orgId;
+        this.deploymentId = deploymentId;
+        this.chatButtonId = chatButtonId;
+        this.apiVersion = apiVersion;
+        this.sequence = 0;
     }
 
     public void getSessionId(){
@@ -63,7 +67,7 @@ public class SalesForceRestAgentClient {
         return responseEntity.getBody();
     }
 
-    public String chatMessage(){
+    public String chatMessage(String msg){
         String chatMsgUrl = String.format("%s/Chasitor/ChatMessage", baseUrl);
 
         HttpHeaders headers = new HttpHeaders();
@@ -73,6 +77,8 @@ public class SalesForceRestAgentClient {
         headers.set("X-LIVEAGENT-SEQUENCE", Long.toString(sequence));
 
         HttpEntity requestEntity = new HttpEntity<>(headers);
+        Map<String, String> bodyMap = new HashMap<>();
+        bodyMap.put("text", msg);
         ResponseEntity<String> responseEntity = restTemplate.exchange(chatMsgUrl, HttpMethod.POST, requestEntity, String.class);
         return responseEntity.getBody();
     }
@@ -93,7 +99,7 @@ public class SalesForceRestAgentClient {
         return responseEntity.getBody();
     }
 
-    public Object getSystemMessage(){
+    public SalesforceSystemMessageResponse getSystemMessage(){
         String sysMsgUrl = String.format("%s/System/Messages", baseUrl);
 
         HttpHeaders headers = new HttpHeaders();
@@ -103,6 +109,6 @@ public class SalesForceRestAgentClient {
 
         HttpEntity requestEntity = new HttpEntity<>(headers);
         ResponseEntity<SalesforceSystemMessageResponse> responseEntity = restTemplate.exchange(sysMsgUrl, HttpMethod.GET, requestEntity, SalesforceSystemMessageResponse.class);
-        return new Object();
+        return responseEntity.getBody();
     }
 }

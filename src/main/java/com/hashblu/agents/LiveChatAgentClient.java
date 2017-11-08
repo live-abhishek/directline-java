@@ -61,7 +61,6 @@ public class LiveChatAgentClient extends AbsAgentClient {
         headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
         headers.set("X-API-Version", "2");
 
-
         HttpEntity requestEntity = new HttpEntity<>(headers);
         ResponseEntity<LiveChatPendingMessageResponse> responseEntity = restTemplate.exchange(receiveChatUrl, HttpMethod.GET, requestEntity, LiveChatPendingMessageResponse.class);
         LiveChatPendingMessageResponse messageResponses = responseEntity.getBody();

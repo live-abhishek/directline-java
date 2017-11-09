@@ -1,6 +1,7 @@
 package com.hashblu.messages;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 /**
  * Created by abhisheks on 23-Oct-17.
@@ -14,6 +15,7 @@ public class HandOffGenericMessage {
     public HandOffGenericMessage(MessageType msgType, String msg){
         this.msgType = msgType;
         this.msg = msg;
+        this.timeStamp = new Timestamp(new Date().getTime());
     }
 
     public String getMsg() {

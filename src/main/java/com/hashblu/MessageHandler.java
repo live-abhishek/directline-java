@@ -28,6 +28,9 @@ public class MessageHandler {
     // agents will PUSH here
     public void handleAgentMessage(HandOffGenericMessage genMsg){
         botQueue.pushMsg(genMsg);
+        if(genMsg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
+            clientRunnerMap.remove(genMsg.getConversationId());
+        }
     }
 
     // direct-line will PUSH here

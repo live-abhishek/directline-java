@@ -1,11 +1,12 @@
 package com.hashblu.agents;
 
+import com.hashblu.exceptions.AgentConnectionException;
+import com.hashblu.exceptions.AgentMessageRetrievalException;
 import com.hashblu.humanhandoff.AppConstants;
 import com.hashblu.messages.AgentMessageResponseConverter;
 import com.hashblu.messages.HandOffGenericMessage;
 import com.hashblu.messages.salesforce.SalesforceSystemMessageResponse;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -33,35 +34,45 @@ public class SalesforceAgentClient extends AbsAgentClient {
 
     @Override
     public void startChat() {
-        sfRestClient.getSessionId();
         try {
-            Thread.sleep(1*1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+            sfRestClient.getSessionId();
+            try {
+                Thread.sleep(1 * 1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-        String responseString = sfRestClient.chasitorInit();
-        if(!responseString.toLowerCase().equals("OK".toLowerCase())){
-            throw new RuntimeException();
-        }
+            String responseString = sfRestClient.chasitorInit();
+            if (!responseString.toLowerCase().equals("OK".toLowerCase())) {
+                throw new AgentConnectionException("Error in Chasitor init");
+            }
 
-        SalesforceSystemMessageResponse chatStatus = sfRestClient.getSystemMessage();
-        if(!chatStatus.getMessages().get(0).getType().equals("ChatRequestSuccess")){
-            throw new RuntimeException();
-        }
-        // this may take a lot of time
-        // if long time taken, discard this chat request altogether
-        SalesforceSystemMessageResponse chatEstablishment = sfRestClient.getSystemMessage();
-        if(!chatEstablishment.getMessages().get(0).getType().equals("ChatEstablished")){
-            throw new RuntimeException();
+            SalesforceSystemMessageResponse chatStatus = sfRestClient.getSystemMessage();
+            if (!chatStatus.getMessages().get(0).getType().equals("ChatRequestSuccess")) {
+                throw new AgentConnectionException("Error in Chat status");
+            }
+            // this may take a lot of time
+            // if long time taken, discard this chat request altogether
+            SalesforceSystemMessageResponse chatEstablishment = sfRestClient.getSystemMessage();
+            if (!chatEstablishment.getMessages().get(0).getType().equals("ChatEstablished")) {
+                throw new AgentConnectionException("Error in Chat Establishment");
+            }
+        } catch(AgentConnectionException e){
+            throw e;
+        } catch(Exception e){
+            throw new AgentConnectionException(e);
         }
     }
 
     @Override
     public List<HandOffGenericMessage> receiveChat() {
-        SalesforceSystemMessageResponse messages = sfRestClient.getSystemMessage();
-        List<HandOffGenericMessage> genMessages = AgentMessageResponseConverter.process(messages);
-        return genMessages;
+        try {
+            SalesforceSystemMessageResponse messages = sfRestClient.getSystemMessage();
+            List<HandOffGenericMessage> genMessages = AgentMessageResponseConverter.process(messages);
+            return genMessages;
+        } catch (Exception e){
+            throw new AgentMessageRetrievalException("Error while retrieving messages", e);
+        }
     }
 
     @Override

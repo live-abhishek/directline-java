@@ -1,6 +1,7 @@
 package com.hashblu.agents;
 
 import com.hashblu.humanhandoff.AppConstants;
+import com.hashblu.messages.AgentMessageResponseConverter;
 import com.hashblu.messages.HandOffGenericMessage;
 import com.hashblu.messages.salesforce.SalesforceSystemMessageResponse;
 import org.springframework.http.HttpEntity;
@@ -49,7 +50,8 @@ public class SalesforceAgentClient extends AbsAgentClient {
     @Override
     public List<HandOffGenericMessage> receiveChat() {
         SalesforceSystemMessageResponse messages = sfRestClient.getSystemMessage();
-
+        List<HandOffGenericMessage> genMessages = AgentMessageResponseConverter.process(messages);
+        return genMessages;
     }
 
     @Override

@@ -17,7 +17,7 @@ public class SalesforceChasitorInitBody {
     private String visitorName;
     private List<String> prechatDetails;
     private List<String> prechatEntities;
-    private boolean receiveQueueDetails;
+    private boolean receiveQueueUpdates;
     private boolean isPost;
 
     public SalesforceChasitorInitBody(String organizationId, String deploymentId, String buttonId, String sessionId, String visitorName){
@@ -31,7 +31,7 @@ public class SalesforceChasitorInitBody {
         this.visitorName = visitorName;
         this.prechatDetails = Collections.emptyList();
         this.prechatEntities = Collections.emptyList();
-        this.receiveQueueDetails = false;
+        this.receiveQueueUpdates = true;
         this.isPost = true;
     }
 
@@ -115,15 +115,15 @@ public class SalesforceChasitorInitBody {
         this.prechatEntities = prechatEntities;
     }
 
-    public boolean isReceiveQueueDetails() {
-        return receiveQueueDetails;
+    public boolean isReceiveQueueUpdates() {
+        return receiveQueueUpdates;
     }
 
-    public void setReceiveQueueDetails(boolean receiveQueueDetails) {
-        this.receiveQueueDetails = receiveQueueDetails;
+    public void setReceiveQueueUpdates(boolean receiveQueueUpdates) {
+        this.receiveQueueUpdates = receiveQueueUpdates;
     }
 
-    public boolean isPost() {
+    public boolean getIsPost() {
         return isPost;
     }
 

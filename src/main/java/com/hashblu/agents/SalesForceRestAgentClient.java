@@ -27,20 +27,24 @@ public class SalesForceRestAgentClient {
     private String affinity;
     private String sessionId;
     private long sequence;
+    private String visitorName;
 
-    public SalesForceRestAgentClient(String orgId, String deploymentId, String chatButtonId, String apiVersion){
+    public SalesForceRestAgentClient(String orgId, String deploymentId, String chatButtonId, String apiVersion, String baseUrl, String visitorName){
+        this.restTemplate = new RestTemplate();
         this.orgId = orgId;
         this.deploymentId = deploymentId;
         this.chatButtonId = chatButtonId;
         this.apiVersion = apiVersion;
         this.sequence = 0;
+        this.baseUrl = baseUrl;
+        this.visitorName = visitorName;
     }
 
     public void getSessionId(){
         String startChatUrl = String.format("%s/System/SessionId", baseUrl);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-LIVEAGENT-AFFINITY", null);
+        headers.set("X-LIVEAGENT-AFFINITY", "null");
         headers.set("X-LIVEAGENT-API-VERSION", apiVersion);
 
         HttpEntity requestEntity = new HttpEntity<>(headers);
@@ -52,18 +56,22 @@ public class SalesForceRestAgentClient {
         this.sequence = 1;
     }
 
-    public String chasitorInit(){
-        String chasitorInitUrl = String.format("%s/Chaistor/ChasitorInit", baseUrl);
+    public String chasitorInit() {
+        String chasitorInitUrl = String.format("%s/Chasitor/ChasitorInit", baseUrl);
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-LIVEAGENT-AFFINITY", affinity);
-        headers.set("X-LIVEAGENT-API-VERSION", apiVersion);
-        headers.set("X-LIVEAGENT-SESSION-KEY", sessionKey);
-        headers.set("X-LIVEAGENT-SEQUENCE", Long.toString(sequence));
+        headers.set("x-liveagent-affinity", affinity);
+        headers.set("x-liveagent-api-version", apiVersion);
+        headers.set("x-liveagent-session-key", sessionKey);
+        headers.set("x-liveagent-sequence", Long.toString(sequence));
+        headers.set("Content-Type", "application/json");
+        headers.set("cache-control", "no-cache");
 
-        SalesforceChasitorInitBody chasitorInit = new SalesforceChasitorInitBody(this.orgId, this.deploymentId, this.chatButtonId, this.sessionId, "botUser");
-        HttpEntity<SalesforceChasitorInitBody> requestEntity = new HttpEntity(chasitorInit, headers);
-        ResponseEntity<String> responseEntity = restTemplate.exchange(chasitorInitUrl, HttpMethod.POST, requestEntity, String.class);
+        SalesforceChasitorInitBody chasitorInitBody = new SalesforceChasitorInitBody(this.orgId, this.deploymentId, this.chatButtonId, this.sessionId, this.visitorName);
+        HttpEntity<SalesforceChasitorInitBody> requestEntity = new HttpEntity(chasitorInitBody, headers);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(chasitorInitUrl, requestEntity, String.class);
+
+        sequence++;
         return responseEntity.getBody();
     }
 
@@ -76,10 +84,11 @@ public class SalesForceRestAgentClient {
         headers.set("X-LIVEAGENT-SESSION-KEY", sessionKey);
         headers.set("X-LIVEAGENT-SEQUENCE", Long.toString(sequence));
 
-        HttpEntity requestEntity = new HttpEntity<>(headers);
         Map<String, String> bodyMap = new HashMap<>();
         bodyMap.put("text", msg);
+        HttpEntity requestEntity = new HttpEntity<>(bodyMap, headers);
         ResponseEntity<String> responseEntity = restTemplate.exchange(chatMsgUrl, HttpMethod.POST, requestEntity, String.class);
+        sequence++;
         return responseEntity.getBody();
     }
 

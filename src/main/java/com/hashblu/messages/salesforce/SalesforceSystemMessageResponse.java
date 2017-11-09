@@ -6,16 +6,16 @@ import java.util.List;
  * Created by abhisheks on 08-Nov-17.
  */
 public class SalesforceSystemMessageResponse {
-    private List<MessageType> messagesTypes;
+    private List<MessageType> messages;
     private long sequence;
     private long offset;
 
-    public List<MessageType> getMessagesTypes() {
-        return messagesTypes;
+    public List<MessageType> getMessages() {
+        return messages;
     }
 
-    public void setMessagesTypes(List<MessageType> messagesTypes) {
-        this.messagesTypes = messagesTypes;
+    public void setMessages(List<MessageType> messages) {
+        this.messages = messages;
     }
 
     public long getSequence() {

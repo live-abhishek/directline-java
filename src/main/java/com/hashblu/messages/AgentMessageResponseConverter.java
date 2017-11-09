@@ -34,11 +34,13 @@ public class AgentMessageResponseConverter {
 
     public static List<HandOffGenericMessage> process(SalesforceSystemMessageResponse msgResponses){
         List<HandOffGenericMessage> handOffGenericMessages = new ArrayList<>();
-        for(SalesforceSystemMessageResponse.MessageType msgRes : msgResponses.getMessagesTypes()){
-            if(msgRes.getType().equals("ChatMessage")){
-                HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT, msgRes.getMessage().getText());
-                genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
-                handOffGenericMessages.add(genericMessage);
+        if(msgResponses != null && msgResponses.getMessages() != null) {
+            for (SalesforceSystemMessageResponse.MessageType msgRes : msgResponses.getMessages()) {
+                if (msgRes.getType().equals("ChatMessage")) {
+                    HandOffGenericMessage genericMessage = new HandOffGenericMessage(HandOffGenericMessage.MessageType.CHAT_TEXT_FROM_AGENT, msgRes.getMessage().getText());
+                    genericMessage.setTimeStamp(new Timestamp(new Date().getTime()));
+                    handOffGenericMessages.add(genericMessage);
+                }
             }
         }
         return handOffGenericMessages;

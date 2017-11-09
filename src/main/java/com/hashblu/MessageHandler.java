@@ -1,5 +1,6 @@
 package com.hashblu;
 
+import com.hashblu.agents.AgentClientProvider;
 import com.hashblu.agents.AgentClientRunner;
 import com.hashblu.agents.LiveChatAgentClient;
 import com.hashblu.humanhandoff.AppConstants;
@@ -66,6 +67,6 @@ public class MessageHandler {
     }
 
     private AgentClientRunner createAgentClientRunner(String conversationId){
-        return new AgentClientRunner(conversationId, new LiveChatAgentClient(AppConstants.LIVE_CHAT_LICENCE_ID));
+        return new AgentClientRunner(conversationId, AgentClientProvider.getAgentClient());
     }
 }

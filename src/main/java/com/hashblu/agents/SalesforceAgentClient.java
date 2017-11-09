@@ -4,11 +4,8 @@ import com.hashblu.humanhandoff.AppConstants;
 import com.hashblu.messages.AgentMessageResponseConverter;
 import com.hashblu.messages.HandOffGenericMessage;
 import com.hashblu.messages.salesforce.SalesforceSystemMessageResponse;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -21,15 +18,17 @@ public class SalesforceAgentClient extends AbsAgentClient {
     private String deploymentId;
     private String chatButtonId;
     private String apiVersion;
+    private String visitorName;
     private SalesForceRestAgentClient sfRestClient;
 
-    private SalesforceAgentClient(String orgId, String deploymentId, String chatButtonId, String apiVersion){
+    public SalesforceAgentClient(String orgId, String deploymentId, String chatButtonId, String apiVersion, String visitorName){
         this.baseUrl = String.format("%s/%s", AppConstants.SALESFORCE_URL, "chat/rest");
         this.orgId = orgId;
         this.deploymentId = deploymentId;
         this.chatButtonId = chatButtonId;
         this.apiVersion = apiVersion;
-        this.sfRestClient = new SalesForceRestAgentClient(this.orgId, this.deploymentId, this.chatButtonId, this.apiVersion);
+        this.visitorName = visitorName;
+        this.sfRestClient = new SalesForceRestAgentClient(this.orgId, this.deploymentId, this.chatButtonId, this.apiVersion, this.baseUrl, this.visitorName);
     }
 
     @Override
@@ -40,11 +39,22 @@ public class SalesforceAgentClient extends AbsAgentClient {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        sfRestClient.chasitorInit();
+
+        String responseString = sfRestClient.chasitorInit();
+        if(!responseString.toLowerCase().equals("OK".toLowerCase())){
+            throw new RuntimeException();
+        }
+
         SalesforceSystemMessageResponse chatStatus = sfRestClient.getSystemMessage();
+        if(!chatStatus.getMessages().get(0).getType().equals("ChatRequestSuccess")){
+            throw new RuntimeException();
+        }
         // this may take a lot of time
         // if long time taken, discard this chat request altogether
         SalesforceSystemMessageResponse chatEstablishment = sfRestClient.getSystemMessage();
+        if(!chatEstablishment.getMessages().get(0).getType().equals("ChatEstablished")){
+            throw new RuntimeException();
+        }
     }
 
     @Override

@@ -125,7 +125,11 @@ public class AgentClientRunner {
         } catch (InterruptedException e){
             e.printStackTrace();
         }
-        agentClient.closeChat();
+        try {
+            agentClient.closeChat();
+        } catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
     public IMessageQueue<HandOffGenericMessage> getAgentQueue(){

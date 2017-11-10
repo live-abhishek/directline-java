@@ -75,7 +75,7 @@ public class AgentClientRunner {
             }
         };
         receiveRemoteFlag = true;
-        receiverRemoteThread.setName("Agent Receiver: " + agentClient.getClass().getSimpleName());
+        receiverRemoteThread.setName(String.format("Agent Receiver %s", this.conversationId) + agentClient.getClass().getSimpleName());
         receiverRemoteThread.start();
     }
 
@@ -105,7 +105,7 @@ public class AgentClientRunner {
             }
         };
         receiveQueueFlag = true;
-        receiverQueueThread.setName("Agent Sender: " + agentClient.getClass().getSimpleName());
+        receiverQueueThread.setName(String.format("Agent Sender %s", this.conversationId) + agentClient.getClass().getSimpleName());
         receiverQueueThread.start();
     }
 
@@ -114,10 +114,10 @@ public class AgentClientRunner {
         receiveQueueFlag = false;
         try{
             agentClient.closeChat();
-            if(receiverRemoteThread!= null) {
+            if(receiverRemoteThread!= null && Thread.currentThread() != receiverRemoteThread) {
                 receiverRemoteThread.join(2 * 1000);
             }
-            if(receiverQueueThread != null) {
+            if(receiverQueueThread != null && Thread.currentThread() != receiverQueueThread) {
                 receiverQueueThread.join(2 * 1000);
             }
         } catch(Exception e){

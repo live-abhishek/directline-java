@@ -29,14 +29,18 @@ public class MessageHandler {
     public void handleAgentMessage(HandOffGenericMessage genMsg){
         botQueue.pushMsg(genMsg);
         if(genMsg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
-            clientRunnerMap.remove(genMsg.getConversationId());
+            AgentClientRunner clientRunner = clientRunnerMap.get(genMsg.getConversationId());
+            if(clientRunner != null) {
+                clientRunner.endChat();
+                clientRunnerMap.remove(genMsg.getConversationId());
+            }
         }
     }
 
     // direct-line will PUSH here
     public void handleBotMessage(HandOffGenericMessage genMsg) throws ApiException {
         if(genMsg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_START_FROM_USER){
-            if(clientRunnerMap.size() < 5){
+            if(clientRunnerMap.size() < AppConstants.MAX_SIMULTANEOUS_USERS){
                 AgentClientRunner agentClientRunner = createAgentClientRunner(genMsg.getConversationId());
                 clientRunnerMap.put(genMsg.getConversationId(), agentClientRunner);
                 agentClientRunner.startHandoff();

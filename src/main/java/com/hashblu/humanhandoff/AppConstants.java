@@ -17,5 +17,7 @@ public class AppConstants {
     public static final String SALESFORCE_API_VERSION = "40";
     public static final String SALESFORCE_VISITOR_NAME = "botUser";
     // salesforce, livechat
-    public static final String AGENT_CLIENT_TYPE="salesforce";
+    public static final String AGENT_CLIENT_TYPE="livechat";
+    public static final long USER_MESSAGE_WAIT_PERIOD_MIN = 1;
+    public static final long MAX_SIMULTANEOUS_USERS = 5;
 }

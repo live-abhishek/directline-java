@@ -1,14 +1,12 @@
 package com.hashblu.agents;
 
 import com.hashblu.MessageHandler;
-import com.hashblu.exceptions.AgentMessageRetrievalException;
+import com.hashblu.humanhandoff.AppConstants;
 import com.hashblu.messages.HandOffGenericMessage;
 import com.hashblu.messages.queue.CustomMessageQueue;
 import com.hashblu.messages.queue.IMessageQueue;
 import io.swagger.client.ApiException;
 
-import java.sql.Timestamp;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -29,7 +27,8 @@ public class AgentClientRunner {
     public String conversationId;
     public long lastMessageTime;
 
-    private int messageRetirevalRetryCount = 0;
+    private int messageRetrievalRetryCount = 0;
+    private long userMsgWaitTime = AppConstants.USER_MESSAGE_WAIT_PERIOD_MIN;
 
     public AgentClientRunner(String conversationId, IAgentClient client){
         this.agentClient = client;
@@ -47,7 +46,6 @@ public class AgentClientRunner {
             startReceivingQueueMessage();
         } catch (Exception e){
             HandOffGenericMessage genMsg = createHandoffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, e.getMessage());
-            lastMessageTime = System.currentTimeMillis();
             MessageHandler.getMessageHandler().handleAgentMessage(genMsg);
         }
     }
@@ -56,31 +54,24 @@ public class AgentClientRunner {
         receiverRemoteThread = new Thread(){
             @Override
             public void run(){
-                while(true){
-                    if(!receiveRemoteFlag) {
-                        break;
-                    }
-                    try{
-                        List<HandOffGenericMessage> genericMsgs = agentClient.receiveChat();
-                        genericMsgs.forEach(m -> {
-                            m.setConversationId(AgentClientRunner.this.conversationId);
-                            MessageHandler.getMessageHandler().handleAgentMessage(m);
-                            if(m.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT){
-                                try {
-                                    endChat();
-                                } catch (ApiException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-                        messageRetirevalRetryCount = 0;
-                        Thread.sleep(1*1000);
-                    } catch (Exception e){
-                        messageRetirevalRetryCount++;
-                        handleMaxRetry();
-                        e.printStackTrace();
-                    }
+            while(true){
+                if(!receiveRemoteFlag) {
+                    break;
                 }
+                try{
+                    List<HandOffGenericMessage> genericMsgs = agentClient.receiveChat();
+                    genericMsgs.forEach(m -> {
+                        m.setConversationId(AgentClientRunner.this.conversationId);
+                        MessageHandler.getMessageHandler().handleAgentMessage(m);
+                    });
+                    messageRetrievalRetryCount = 0;
+                    Thread.sleep(1*1000);
+                } catch (Exception e){
+                    messageRetrievalRetryCount++;
+                    handleMaxRetry();
+                    e.printStackTrace();
+                }
+            }
             }
         };
         receiveRemoteFlag = true;
@@ -96,13 +87,15 @@ public class AgentClientRunner {
                     if(!receiveQueueFlag){
                         break;
                     }
+                    if(System.currentTimeMillis() >= lastMessageTime + userMsgWaitTime * 60 * 1000){ // end chat if user a has not sent any chat for some time
+                        HandOffGenericMessage genMsg = createHandoffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, "No new message from user.");
+                        MessageHandler.getMessageHandler().handleAgentMessage(genMsg);
+                    }
                     try{
                         HandOffGenericMessage msg = MessageHandler.getMessageHandler().getAgentMessage(AgentClientRunner.this);
                         if(msg != null) {
+                            lastMessageTime = System.currentTimeMillis();
                             agentClient.sendChat(msg.getMsg());
-                            if(msg.getMsgType() == HandOffGenericMessage.MessageType.CHAT_END_FROM_USER){
-                                endChat();
-                            }
                         }
                         Thread.sleep(1*1000);
                     } catch(Exception e){
@@ -116,17 +109,13 @@ public class AgentClientRunner {
         receiverQueueThread.start();
     }
 
-    public void endChat() throws ApiException {
+    public void endChat() {
         receiveRemoteFlag = false;
         receiveQueueFlag = false;
         try{
-            receiverRemoteThread.join();
-            receiverQueueThread.join();
-        } catch (InterruptedException e){
-            e.printStackTrace();
-        }
-        try {
             agentClient.closeChat();
+            receiverRemoteThread.join(2*1000);
+            receiverQueueThread.join(2*1000);
         } catch(Exception e){
             e.printStackTrace();
         }
@@ -143,15 +132,10 @@ public class AgentClientRunner {
     }
 
     private void handleMaxRetry() {
-        if(messageRetirevalRetryCount >= 5){
-            // create & send message & endChat
+        if(messageRetrievalRetryCount >= 5){
+            // create & send message
             HandOffGenericMessage genericMessage = createHandoffGenericMessage(HandOffGenericMessage.MessageType.CHAT_END_FROM_AGENT, "");
             MessageHandler.getMessageHandler().handleAgentMessage(genericMessage);
-            try {
-                endChat();
-            } catch (ApiException a) {
-                a.printStackTrace();
-            }
         }
     }
 }

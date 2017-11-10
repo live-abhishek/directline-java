@@ -114,8 +114,12 @@ public class AgentClientRunner {
         receiveQueueFlag = false;
         try{
             agentClient.closeChat();
-            receiverRemoteThread.join(2*1000);
-            receiverQueueThread.join(2*1000);
+            if(receiverRemoteThread!= null) {
+                receiverRemoteThread.join(2 * 1000);
+            }
+            if(receiverQueueThread != null) {
+                receiverQueueThread.join(2 * 1000);
+            }
         } catch(Exception e){
             e.printStackTrace();
         }
